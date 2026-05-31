@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-exporter
+  namespace: llm
+  labels:
+    app: ollama-exporter
+    component: metrics
+    part-of: llm-observability-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-exporter
+  template:
+    metadata:
+      labels:
+        app: ollama-exporter
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+      - name: ollama-exporter
+        # Built with Docker; k3s uses containerd — import before deploy:
+        #   docker save localhost/ollama-exporter:latest | sudo k3s ctr images import -
+        image: localhost/ollama-exporter:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9099
+          name: metrics
+        - containerPort: 11435
+          name: proxy
+        envFrom:
+        - configMapRef:
+            name: ollama-exporter-config
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9099
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9099
+          initialDelaySeconds: 5
+          timeoutSeconds: 5

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+  labels:
+    app: prometheus
+    part-of: llm-observability-stack
+data:
+  recording-rules.yaml: |
+    groups:
+      - name: llm_observability_rules
+        rules:
+          - record: job:ollama_models_loaded:sum
+            expr: sum(ollama_models_loaded)
+            
+          - record: instance:gpu_utilization:avg5m
+            expr: avg_over_time(DCGM_FI_DEV_GPU_UTIL[5m])
+
+          - record: instance:node_cpu_utilisation:avg5m
+            expr: 1 - avg without (cpu) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+            
+          - record: instance:node_memory_utilisation:ratio
+            expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)

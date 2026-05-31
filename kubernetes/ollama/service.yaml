@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: llm
+  labels:
+    app: ollama
+    part-of: llm-observability-stack
+spec:
+  ports:
+  - port: 11434
+    targetPort: api
+  selector:
+    app: ollama

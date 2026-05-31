@@ -1,0 +1,42 @@
+# Secrets and local credentials
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.yaml
+**/secrets/
+
+# Kubernetes / cluster local config
+kubeconfig
+.kube/config.local
+*.kubeconfig
+
+# Build and runtime artifacts
+__pycache__/
+*.py[cod]
+.Python
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# Logs and temp
+*.log
+tmp/
+temp/
+
+# Cursor / local assets (screenshots live in docs/images/)
+assets/

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ollama-exporter-config
+  namespace: llm
+  labels:
+    app: ollama-exporter
+    part-of: llm-observability-stack
+data:
+  # The exporter will poll this URL. Since both are in 'llm' namespace,
+  # it uses the K8s internal DNS name.
+  OLLAMA_HOST: "http://ollama.llm.svc.cluster.local:11434"
+  SCRAPE_INTERVAL: "15"
+  EXPORTER_PORT: "9099"
+  # Send /api/generate and /api/chat here to record token metrics (not :11434).
+  PROXY_PORT: "11435"
+  PROXY_ENABLED: "true"

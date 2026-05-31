@@ -1,0 +1,70 @@
+# NVIDIA DCGM Exporter
+# Collects detailed GPU metrics directly from the hardware
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: monitoring
+  labels:
+    app: dcgm-exporter
+    component: metrics
+    part-of: llm-observability-stack
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  template:
+    metadata:
+      labels:
+        app: dcgm-exporter
+    spec:
+      runtimeClassName: nvidia
+      priorityClassName: system-node-critical
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.0-ubuntu22.04
+        name: dcgm-exporter
+        env:
+        - name: DCGM_EXPORTER_NO_HOSTNAME
+          value: "1"
+        - name: DCGM_EXPORTER_KUBERNETES
+          value: "true"
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: compute,utility
+        ports:
+        - name: metrics
+          containerPort: 9400
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+          capabilities:
+            add: ["SYS_ADMIN"]
+        volumeMounts:
+        - name: pod-gpu-resources
+          readOnly: true
+          mountPath: /var/lib/kubelet/pod-resources
+      volumes:
+      - name: pod-gpu-resources
+        hostPath:
+          path: /var/lib/kubelet/pod-resources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dcgm-exporter
+  namespace: monitoring
+  labels:
+    app: dcgm-exporter
+spec:
+  selector:
+    app: dcgm-exporter
+  ports:
+  - name: metrics
+    port: 9400
+    targetPort: metrics
